@@ -1,0 +1,140 @@
+# FLACMetadataEditor 使用指南和 API 文档
+
+## 简介
+
+FLACMetadataEditor 是一个用于在浏览器中编辑 FLAC 音频文件元数据的 JavaScript 库。它允许你读取、修改和添加各种元数据，如标题、艺术家、专辑信息和专辑封面等。
+
+## 安装
+
+将 `FLACMetadataEditor.js` 文件包含在你的 HTML 文件中：
+
+```html
+<script src="path/to/FLACMetadataEditor.js"></script>
+```
+
+## 基本用法
+
+### 1. 创建编辑器实例
+
+```javascript
+const fileInput = document.getElementById('fileInput');
+fileInput.addEventListener('change', async (event) => {
+    const file = event.target.files[0];
+    const arrayBuffer = await file.arrayBuffer();
+    const editor = new FLACMetadataEditor(arrayBuffer);
+});
+```
+
+### 2. 读取元数据
+
+```javascript
+const title = editor.getComment('TITLE');
+const artist = editor.getComment('ARTIST');
+console.log(`Title: ${title}, Artist: ${artist}`);
+```
+
+### 3. 修改元数据
+
+```javascript
+editor.addComment('TITLE', 'New Song Title');
+editor.addComment('ARTIST', 'New Artist Name');
+```
+
+### 4. 保存修改
+
+```javascript
+editor.serializeMetadata();
+const newArrayBuffer = editor.arrayBuffer;
+// 将 newArrayBuffer 保存为文件或发送到服务器
+```
+
+## API 参考
+
+### 构造函数
+
+#### `new FLACMetadataEditor(buffer)`
+
+- `buffer`: ArrayBuffer 或 Buffer，包含 FLAC 文件数据。
+
+### 方法
+
+#### `getComment(field)`
+
+- `field`: 字符串，要获取的元数据字段名（如 'TITLE', 'ARTIST'）。
+- 返回: 字符串数组，包含指定字段的所有值。
+
+#### `addComment(field, value)`
+
+- `field`: 字符串，要添加的元数据字段名。
+- `value`: 字符串，要添加的值。
+- 返回: FLACMetadataEditor 实例，用于链式调用。
+
+#### `removeComment(field, value)`
+
+- `field`: 字符串，要删除的元数据字段名。如果为 null，删除所有注释。
+- `value`: 字符串，要删除的特定值。如果为 null，删除指定字段的所有值。
+- 返回: FLACMetadataEditor 实例，用于链式调用。
+
+#### `addPicture(dataInput)`
+
+添加或更新专辑封面。
+
+- `dataInput`: 对象，包含以下属性：
+  - `data`: ArrayBuffer 或 Buffer，包含图片数据。
+  - `MIMEType`: 字符串，图片的 MIME 类型（默认: 'image/jpeg'）。
+  - `description`: 字符串，图片描述。
+  - `width`: 数字，图片宽度（像素）。
+  - `height`: 数字，图片高度（像素）。
+- 返回: FLACMetadataEditor 实例，用于链式调用。
+
+#### `serializeMetadata()`
+
+序列化所有元数据更改。
+
+- 返回: FLACMetadataEditor 实例，用于链式调用。
+
+### 属性
+
+#### `arrayBuffer`
+
+包含更新后的 FLAC 文件数据的 ArrayBuffer。
+
+#### `scriptVersion`
+
+返回 FLACMetadataEditor 的版本号。
+
+## 示例
+
+### 修改标题和艺术家
+
+```javascript
+const editor = new FLACMetadataEditor(flacArrayBuffer);
+editor.addComment('TITLE', 'New Song Title');
+editor.addComment('ARTIST', 'New Artist');
+editor.serializeMetadata();
+const updatedFlacData = editor.arrayBuffer;
+```
+
+### 添加专辑封面
+
+```javascript
+const editor = new FLACMetadataEditor(flacArrayBuffer);
+const imageArrayBuffer = await fetch('cover.jpg').then(r => r.arrayBuffer());
+editor.addPicture({
+    data: imageArrayBuffer,
+    MIMEType: 'image/jpeg',
+    description: 'Album Cover',
+    width: 500,
+    height: 500
+});
+editor.serializeMetadata();
+const updatedFlacData = editor.arrayBuffer;
+```
+
+## 注意事项
+
+- 这个库在浏览器环境中运行，对于大文件可能会有性能限制。
+- 确保在使用 `serializeMetadata()` 后访问 `arrayBuffer` 以获取更新后的文件数据。
+- 目前不支持 CUESHEET 元数据块的编辑。
+
+希望这个指南对你有所帮助！如果你有任何问题或需要进一步的说明，请随时询问。
